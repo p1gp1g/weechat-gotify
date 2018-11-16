@@ -9,7 +9,6 @@ except ImportError:
 	print('This script has to run under WeeChat (https://weechat.org/).')
 	exit(1)
 
-from urllib import urlencode
 import requests
 
 SCRIPT_NAME = 'gotify'
