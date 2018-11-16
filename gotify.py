@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# https://github.com/p3lim/weechat-pushjet
+# https://github.com/flocke/weechat-gotify
 
 try:
 	import weechat
@@ -10,26 +10,24 @@ except ImportError:
 	exit(1)
 
 from urllib import urlencode
+import requests
 
-SCRIPT_NAME = 'pushjet'
-SCRIPT_AUTHOR = 'p3lim'
-SCRIPT_VERSION = '0.1.1'
+SCRIPT_NAME = 'gotify'
+SCRIPT_AUTHOR = 'flocke'
+SCRIPT_VERSION = '0.1.0'
 SCRIPT_LICENSE = 'MIT'
-SCRIPT_DESC = 'Send highlights and mentions through Pushjet.io'
+SCRIPT_DESC = 'Send highlights and mentions through Gotify'
 
 SETTINGS = {
 	'host': (
-		'https://api.pushjet.io',
-		'host for the pushjet api'),
-	'secret': (
 		'',
-		'secret for the pushjet api'),
-	'level': (
-		'4',
-		'severity level for the message, from 1 to 5 (low to high)'),
-	'timeout': (
-		'30',
-		'timeout for the message sending in seconds (>= 1)'),
+		'host for the gotify api'),
+	'token': (
+		'',
+		'app token for the gotify api'),
+	'priority': (
+		'2',
+		'priority of the message'),
 	'separator': (
 		': ',
 		'separator between nick and message in notifications'),
@@ -51,31 +49,17 @@ SETTINGS = {
 }
 
 def send_message(title, message):
-	secret = weechat.config_get_plugin('secret')
-	if secret != '':
-		data = {
-			'secret': secret,
-			'level': int(weechat.config_get_plugin('level')),
-			'title': title,
-			'message': message,
-		}
+	token = weechat.config_get_plugin('token')
+	if token != '':
+		host = weechat.config_get_plugin('host').rstrip('/') + '/message?token=' + token
 
-		host = weechat.config_get_plugin('host').rstrip('/') + '/message'
-		timeout = int(weechat.config_get_plugin('timeout')) * 1000
+                data = {
+                    "message": message,
+                    "title": title,
+                    "priority": int(weechat.config_get_plugin('priority'))
+                }
 
-		if timeout <= 0:
-			timeout = 1
-
-		data = urlencode(data)
-		cmd = 'python2 -c \'from urllib2 import Request, urlopen; r = urlopen(Request("%s", "%s")); print r.getcode()\'' % (host, data)
-		weechat.hook_process(cmd, timeout, 'send_message_callback', '')
-
-def send_message_callback(data, command, return_code, out, err):
-	if return_code != 0:
-		# something went wrong
-		return weechat.WEECHAT_RC_ERROR
-
-	return weechat.WEECHAT_RC_OK
+                resp = requests.post(host, json=data)
 
 def get_sender(tags, prefix):
 	# attempt to find sender from tags
