@@ -16,7 +16,7 @@ To set them use _`/set plugins.var.python.gotify.foo bar`_ or through the [iset.
 - `priority`
 	- priority of the message (default: 2)
 - `timeout`
-	- timeout for the message sending in seconds (>= 1) (default: 30)
+	- timeout for the message sending in seconds (default: 5)
 - `separator`
 	- separator between nick and message in notifications (default: ": ")
 - `notify_on_highlight`

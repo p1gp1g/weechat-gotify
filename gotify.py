@@ -31,6 +31,9 @@ SETTINGS = {
 	'separator': (
 		': ',
 		'separator between nick and message in notifications'),
+        'timeout': (
+                '5',
+                'timeout for the message sending in seconds'),
 	'notify_on_highlight': (
 		'on',
 		'push notifications for highlights in buffers (on/off)'),
@@ -50,16 +53,24 @@ SETTINGS = {
 
 def send_message(title, message):
 	token = weechat.config_get_plugin('token')
-	if token != '':
-		host = weechat.config_get_plugin('host').rstrip('/') + '/message?token=' + token
+        host = weechat.config_get_plugin('host')
+
+	if token != '' and host != '':
+                timeout = float(weechat.config_get_plugin('timeout'))
+                priority = int(weechat.config_get_plugin('priority'))
+
+		api = host.rstrip('/') + '/message?token=' + token
 
                 data = {
                     "message": message,
                     "title": title,
-                    "priority": int(weechat.config_get_plugin('priority'))
+                    "priority": priority
                 }
 
-                resp = requests.post(host, json=data)
+                try:
+                    resp = requests.post(api, json=data, timeout=timeout)
+                except requests.exceptions.Timeout:
+                    weechat.prnt("", "{0:s}failed to send notification, the request to the Gotify API timed out".format(weechat.prefix("error")))
 
 def get_sender(tags, prefix):
 	# attempt to find sender from tags
