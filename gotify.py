@@ -159,7 +159,7 @@ def message_callback(data, buffer, date, tags, displayed, highlight, prefix, mes
 		if int(highlight):
 			buffer_names = get_buffer_names(buffer)
 			send_message(buffer_names[0] or buffer_names[1], message)
-		else:
+		elif not(weechat.string_match(message,"->*",0) or weechat.string_match(message,"<--*",0)):
 			send_message('Private Message', message)
 
 	return weechat.WEECHAT_RC_OK
